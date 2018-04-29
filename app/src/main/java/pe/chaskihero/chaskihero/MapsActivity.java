@@ -1,8 +1,13 @@
 package pe.chaskihero.chaskihero;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -27,10 +32,12 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -39,7 +46,11 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
+import pe.chaskihero.chaskihero.model.Chasqui;
+import pe.chaskihero.chaskihero.model.MapAreaSegura;
 import pe.chaskihero.chaskihero.model.MapPersonasVulnerables;
+import pe.chaskihero.chaskihero.model.MapPuntoAcopio;
+import pe.chaskihero.chaskihero.model.MapViviendaVulnerable;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,NavigationView.OnNavigationItemSelectedListener {
 
@@ -57,6 +68,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     ValueEventListener listenerMapsPersonas;
     DatabaseReference referenciaMapsPersonas;
+
+    ValueEventListener listenerMapAreas;
+    DatabaseReference referenciaMapAreas;
+
+    ValueEventListener listenerMapPuntosAcopio;
+    DatabaseReference referenciaMapPuntosAcopio;
+
+    ValueEventListener listenerMapViviendas;
+    DatabaseReference referenciaMapViviendas;
 
     boolean isMoveCameraInicial=false;
 
@@ -110,10 +130,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        /*
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("message");
 
         myRef.setValue("Hello, World!");
+        */
     }
 
 
@@ -133,20 +155,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                /*
-                if(item.getItemId()==R.id.item1)
+
+                if(item.getItemId()==R.id.menu_people)
                 {
                     // do something
+                    Intent i = new Intent(MapsActivity.this, PeopleActivity.class);
+                    startActivity(i);
                 }
-                else if(item.getItemId()== R.id.filter)
-                {
-                    // do something
-                }
-                else{
-                    // do something
-                }
-                */
-                Toast.makeText(MapsActivity.this,"gogogo",Toast.LENGTH_SHORT).show();
+
+                //Toast.makeText(MapsActivity.this,"gogogo",Toast.LENGTH_SHORT).show();
                 return false;
             }
         });
@@ -218,7 +235,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.clear();
         if (mapPersonas){
 
-            DatabaseReference referenciaMapsPersonas;
+            //PERSONAS VULNERABLES
             referenciaMapsPersonas = database.getReference("mapa/1/1/personasVulnerables/");
             listenerMapsPersonas = new ValueEventListener() {
                 @Override
@@ -227,7 +244,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     for (DataSnapshot data : dataSnapshot.getChildren()) {
                         MapPersonasVulnerables u = data.getValue(MapPersonasVulnerables.class);
                         u.key = data.getKey();
-                        tmp.add(u);
+                        //tmp.add(u);
                         Log.i("HOLA"," --- persona: "+u.nombre);
 
                         //Actualizar pines
@@ -240,7 +257,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         markerOptions.position(sydney)
                                 .title("Persona Vulnerable")
                                 .snippet(u.nombre+"\n"+u.direccion)
-                                .icon(BitmapDescriptorFactory.defaultMarker( BitmapDescriptorFactory.HUE_BLUE));
+                                //.icon(BitmapDescriptorFactory.defaultMarker( BitmapDescriptorFactory.HUE_BLUE));
+                                .icon(bitmapDescriptorFromVector(MapsActivity.this, R.drawable.pin_people_c));
 
                         /*
                         InfoWindowData info = new InfoWindowData();
@@ -248,14 +266,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         info.setHotel("Hotel : excellent hotels available");
                         info.setFood("Food : all types of restaurants available");
                         info.setTransport("Reach the site by bus, car and train.");*/
-
                         CustomInfoWindowGoogleMap customInfoWindow = new CustomInfoWindowGoogleMap(MapsActivity.this);
                         mMap.setInfoWindowAdapter(customInfoWindow);
 
                         Marker m = mMap.addMarker(markerOptions);
                         //m.showInfoWindow();
-
-
                     }
 
 
@@ -267,12 +282,135 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             };
             referenciaMapsPersonas.addListenerForSingleValueEvent(listenerMapsPersonas);
+
+
+
+            //AREAS SEGURAS
+            referenciaMapAreas = database.getReference("mapa/1/1/areasSeguras/");
+            listenerMapAreas = new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    ArrayList<MapPersonasVulnerables> tmp = new ArrayList<>();
+                    for (DataSnapshot data : dataSnapshot.getChildren()) {
+                        MapAreaSegura u = data.getValue(MapAreaSegura.class);
+                        u.key = data.getKey();
+                        //Log.i("HOLA"," --- persona: "+u.nombre);
+                        LatLng sydney = new LatLng(u.latitud, u.longitud);
+                        MarkerOptions markerOptions = new MarkerOptions();
+                        markerOptions.position(sydney)
+                                .title("Area Segura")
+                                .snippet("")
+                                //.icon(BitmapDescriptorFactory.defaultMarker( BitmapDescriptorFactory.HUE_CYAN));
+                                .icon(bitmapDescriptorFromVector(MapsActivity.this, R.drawable.ic_locker_c));
+                        CustomInfoWindowGoogleMap customInfoWindow = new CustomInfoWindowGoogleMap(MapsActivity.this);
+                        mMap.setInfoWindowAdapter(customInfoWindow);
+                        Marker m = mMap.addMarker(markerOptions);
+                    }
+                }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            };
+            referenciaMapAreas.addListenerForSingleValueEvent(listenerMapAreas);
+
+
+            //PUNTOS ACOPIO
+            referenciaMapPuntosAcopio = database.getReference("mapa/1/1/puntosAcopio/");
+            listenerMapPuntosAcopio = new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    ArrayList<MapPersonasVulnerables> tmp = new ArrayList<>();
+                    for (DataSnapshot data : dataSnapshot.getChildren()) {
+                        MapPuntoAcopio u = data.getValue(MapPuntoAcopio.class);
+                        u.key = data.getKey();
+                        Log.i("HOLA"," --- puntosAcopio: ...");
+                        LatLng sydney = new LatLng(u.latitud, u.longitud);
+                        MarkerOptions markerOptions = new MarkerOptions();
+                        markerOptions.position(sydney)
+                                .title("Punto Acopio")
+                                .snippet("")
+                                //.icon(BitmapDescriptorFactory.defaultMarker( BitmapDescriptorFactory.HUE_ORANGE));
+                                .icon(bitmapDescriptorFromVector(MapsActivity.this, R.drawable.ic_pickup_c));
+                        CustomInfoWindowGoogleMap customInfoWindow = new CustomInfoWindowGoogleMap(MapsActivity.this);
+                        mMap.setInfoWindowAdapter(customInfoWindow);
+                        Marker m = mMap.addMarker(markerOptions);
+                    }
+                }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            };
+            referenciaMapPuntosAcopio.addListenerForSingleValueEvent(listenerMapPuntosAcopio);
+
+
+
+            //VIVIENDAS VULNERABLES
+            referenciaMapViviendas = database.getReference("mapa/1/1/viviendasVulnerables/");
+            listenerMapViviendas = new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    ArrayList<MapPersonasVulnerables> tmp = new ArrayList<>();
+                    for (DataSnapshot data : dataSnapshot.getChildren()) {
+                        MapViviendaVulnerable u = data.getValue(MapViviendaVulnerable.class);
+                        u.key = data.getKey();
+                        //Log.i("HOLA"," --- persona: "+u.nombre);
+                        LatLng sydney = new LatLng(u.latitud, u.longitud);
+                        MarkerOptions markerOptions = new MarkerOptions();
+                        markerOptions.position(sydney)
+                                .title("Vivienda Vulnerable")
+                                .snippet(u.direccion)
+                                //.icon(BitmapDescriptorFactory.defaultMarker( BitmapDescriptorFactory.HUE_RED));
+                                .icon(bitmapDescriptorFromVector(MapsActivity.this, R.drawable.pin_vivienda_c));
+                        CustomInfoWindowGoogleMap customInfoWindow = new CustomInfoWindowGoogleMap(MapsActivity.this);
+                        mMap.setInfoWindowAdapter(customInfoWindow);
+
+                        Marker m = mMap.addMarker(markerOptions);
+
+                    }
+                }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            };
+            referenciaMapViviendas.addListenerForSingleValueEvent(listenerMapViviendas);
+
         }
+    }
+
+    private BitmapDescriptor bitmapDescriptorFromVector(Context context, int vectorResId) {
+        Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
+        vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
+        Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        vectorDrawable.draw(canvas);
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        Toast.makeText(MapsActivity.this, "hola2", Toast.LENGTH_SHORT).show();
+
+
+        int id = item.getItemId();
+        if (id == R.id.nav_logout) {
+            FirebaseAuth.getInstance().signOut();
+            finish();
+            Intent i = new Intent(MapsActivity.this, LoginActivity.class);
+            startActivity(i);
+        } else if (id == R.id.nav_chasquis) {
+            Intent i = new Intent(MapsActivity.this, ChasquiesActivity.class);
+            startActivity(i);
+        } else if (id == R.id.nav_hospitals) {
+            Intent i = new Intent(MapsActivity.this, HospitalesActivity.class);
+            startActivity(i);
+        } else if (id == R.id.nav_phones) {
+            Intent i = new Intent(MapsActivity.this, EmergenciaActivity.class);
+            startActivity(i);
+        }
+
+
+        drawer.closeDrawer(GravityCompat.START);
+
+
         return false;
     }
 

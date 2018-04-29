@@ -2,8 +2,40 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
+<!--
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_chasquis"
+            android:icon="@drawable/help"
+            android:title="Chasquis" />
+        <item
+            android:id="@+id/nav_phones"
+            android:icon="@drawable/side_call"
+            android:title="Teléfonos de ayuda" />
+        <item
+            android:id="@+id/nav_hospitals"
+            android:icon="@drawable/side_institutions"
+            android:title="Hospitales" />
+        <item
+            android:id="@+id/nav_access"
+            android:icon="@drawable/side_gps"
+            android:title="Rutas de acceso" />
+        <item
+            android:id="@+id/nav_config"
+            android:icon="@drawable/side_conf"
+            android:title="Configuraciones" />
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@drawable/logout"
+            android:title="Cerrar Sesión" />
+    </group>
+-->
 
     <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_chasquis"
+            android:icon="@drawable/help"
+            android:title="Chasquis" />
         <item
             android:id="@+id/nav_phones"
             android:icon="@drawable/phone"
@@ -25,6 +57,7 @@
             android:icon="@drawable/logout"
             android:title="Cerrar Sesión" />
     </group>
+
 
 
 </menu>

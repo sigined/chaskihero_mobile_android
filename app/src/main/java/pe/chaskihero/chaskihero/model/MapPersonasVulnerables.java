@@ -9,4 +9,6 @@ public class MapPersonasVulnerables {
     public double longitud;
     public String telefono;
     public String direccion;
+    public String edad;
+    public boolean ok;
 }

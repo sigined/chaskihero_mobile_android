@@ -12,8 +12,10 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
 
     <application
+        android:name=".MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -38,18 +40,39 @@
             android:configChanges="orientation"
             android:label="@string/title_activity_maps"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name=".LoginActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".LoginActivity"
-            android:label="@string/title_activity_login"
-            android:theme="@style/AppTheme">
 
+        <service android:name=".MyFirebaseMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service android:name=".MyFirebaseInstanceIDService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+
+        <activity android:name=".PeopleActivity">
+        </activity>
+
+        <activity android:name=".ChasquiesActivity">
+
+        </activity>
+
+        <activity android:name=".HospitalesActivity">
+        </activity>
+
+        <activity android:name=".EmergenciaActivity">
         </activity>
     </application>
 
