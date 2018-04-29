@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_phones"
+            android:icon="@drawable/phone"
+            android:title="Teléfonos de ayuda" />
+        <item
+            android:id="@+id/nav_hospitals"
+            android:icon="@drawable/hospital"
+            android:title="Hospitales" />
+        <item
+            android:id="@+id/nav_access"
+            android:icon="@drawable/pin"
+            android:title="Rutas de acceso" />
+        <item
+            android:id="@+id/nav_config"
+            android:icon="@drawable/settings"
+            android:title="Configuraciones" />
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@drawable/logout"
+            android:title="Cerrar Sesión" />
+    </group>
+
+
+</menu>
